@@ -1,0 +1,591 @@
+swagger: "2.0"
+info:
+  description: "This specification is for the Produce API - the ultimate wikipedia for cultivating produce"
+  version: "1.0.0"
+  title: "Produce API"
+  termsOfService: "https://www.gathering.farm/produce-api"
+  contact:
+    email: "info@gathering.farm"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "produceapi.swagger.io"
+basePath: "/v2"
+tags:
+- name: "produce"
+  description: "Methods related to produce"
+- name: "variety"
+  description: "Methods related to variety"
+schemes:
+- "http"
+paths:
+  /produce:
+
+###################### POST #######################
+
+    post:
+      tags:
+      - "produce"
+      summary: "Add a new produce to the produce database"
+      description: ""
+      operationId: "addproduce"
+      consumes:
+      - "application/json"
+      - "application/xml"
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Add a new produce to the produce database"
+        required: true
+        schema:
+          $ref: "#/definitions/produce"
+      responses:
+        405:
+          description: "Invalid input"
+  /produce/{produceId}/uploadImage:
+    post:
+      tags:
+      - "produce"
+      summary: "uploads an image"
+      description: ""
+      operationId: "uploadFile"
+      consumes:
+      - "multipart/form-data"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "produceId"
+        in: "path"
+        description: "ID of produce to update"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "additionalMetadata"
+        in: "formData"
+        description: "Additional data to pass to server"
+        required: false
+        type: "string"
+      - name: "file"
+        in: "formData"
+        description: "file to upload"
+        required: false
+        type: "file"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/ApiResponse"
+      security:
+      - producestore_auth:
+        - "write:produces"
+        - "read:produces"
+
+###################### PUT #######################
+
+    put:
+      tags:
+      - "produce"
+      summary: "Updates an existing produce"
+      description: ""
+      operationId: "updateproduce"
+      consumes:
+      - "application/json"
+      - "application/xml"
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Updates an existing produce"
+        required: true
+        schema:
+          $ref: "#/definitions/produce"
+      responses:
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "produce not found"
+        405:
+          description: "Validation exception"
+      security:
+      - producestore_auth:
+        - "write:produces"
+        - "read:produces"
+
+###################### GET #######################
+
+
+  /produce/findByCategory:
+    get:
+      tags:
+      - "produce"
+      summary: "Finds produces by status"
+      description: "Multiple status values can be provided with comma separated strings"
+      operationId: "findproducesByCategory"
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - name: "Category"
+        in: "query"
+        description: "Status values that need to be considered for filter"
+        required: true
+        type: "array"
+        items:
+          type: "string"
+          enum:
+          - "root"
+          - "fruit"
+          - "leafy"
+          - "flower"
+          default: "available"
+        collectionFormat: "multi"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/produce"
+        400:
+          description: "Invalid status value"
+      security:
+      - producestore_auth:
+        - "write:produces"
+        - "read:produces"
+  /produce/findByTags:
+    get:
+      tags:
+      - "produce"
+      summary: "Finds produces by tags"
+      description: "Muliple tags can be provided with comma separated strings. Use tag1, tag2, tag3 for testing."
+      operationId: "findproducesByTags"
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - name: "tags"
+        in: "query"
+        description: "Tags to filter by"
+        required: true
+        type: "array"
+        items:
+          type: "string"
+        collectionFormat: "multi"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/produce"
+        400:
+          description: "Invalid tag value"
+      security:
+      - producestore_auth:
+        - "write:produces"
+        - "read:produces"
+  /produce/{produceId}:
+    get:
+      tags:
+      - "produce"
+      summary: "Find produce by ID"
+      description: "Returns a single produce"
+      operationId: "getproduceById"
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - name: "produceId"
+        in: "path"
+        description: "ID of produce to return"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/produce"
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "produce not found"
+      security:
+      - api_key: []
+    post:
+      tags:
+      - "produce"
+      summary: "Updates a produce in the store with form data"
+      description: ""
+      operationId: "updateproduceWithForm"
+      consumes:
+      - "application/x-www-form-urlencoded"
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - name: "produceId"
+        in: "path"
+        description: "ID of produce that needs to be updated"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "name"
+        in: "formData"
+        description: "Updated name of the produce"
+        required: false
+        type: "string"
+      - name: "status"
+        in: "formData"
+        description: "Updated status of the produce"
+        required: false
+        type: "string"
+      responses:
+        405:
+          description: "Invalid input"
+      security:
+      - producestore_auth:
+        - "write:produces"
+        - "read:produces"
+
+###################### DELETE #######################
+
+    delete:
+      tags:
+      - "produce"
+      summary: "Deletes a produce"
+      description: ""
+      operationId: "deleteproduce"
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - name: "api_key"
+        in: "header"
+        required: false
+        type: "string"
+      - name: "produceId"
+        in: "path"
+        description: "produce id to delete"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "produce not found"
+      security:
+      - producestore_auth:
+        - "write:produces"
+        - "read:produces"
+
+  /variety:
+    post:
+      tags:
+      - "variety"
+      summary: "Create variety"
+      description: "This can only be done by the logged in variety."
+      operationId: "createvariety"
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Created variety object"
+        required: true
+        schema:
+          $ref: "#/definitions/Variety"
+      responses:
+        default:
+          description: "successful operation"
+  /variety/{varietyname}:
+    get:
+      tags:
+      - "variety"
+      summary: "Get variety by variety name"
+      description: ""
+      operationId: "getvarietyByName"
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - name: "varietyname"
+        in: "path"
+        description: "The name that needs to be fetched. Use variety1 for testing. "
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Variety"
+        400:
+          description: "Invalid varietyname supplied"
+        404:
+          description: "variety not found"
+    put:
+      tags:
+      - "variety"
+      summary: "Updated variety"
+      operationId: "updatevariety"
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - name: "varietyname"
+        in: "path"
+        description: "name that need to be updated"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        description: "Updated variety object"
+        required: true
+        schema:
+          $ref: "#/definitions/Variety"
+      responses:
+        400:
+          description: "Invalid variety supplied"
+        404:
+          description: "variety not found"
+    delete:
+      tags:
+      - "variety"
+      summary: "Delete variety"
+      operationId: "deletevariety"
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - name: "varietyname"
+        in: "path"
+        description: "The name that needs to be deleted"
+        required: true
+        type: "string"
+      responses:
+        400:
+          description: "Invalid varietyname supplied"
+        404:
+          description: "variety not found"
+securityDefinitions:
+  producestore_auth:
+    type: "oauth2"
+    authorizationUrl: "http://producestore.swagger.io/oauth/dialog"
+    flow: "implicit"
+    scopes:
+      write:produces: "modify produces in your account"
+      read:produces: "read your produces"
+  api_key:
+    type: "apiKey"
+    name: "api_key"
+    in: "header"
+definitions:
+
+  Calendar:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      calendar:
+        type: "string"
+        enum:
+          - "sow indoors"
+          - "sow outdoors direct"
+          - "sow outdoors undercover"
+          - "transplant outdoors direct"
+          - "transplant outdoors undercover"
+          - "harvest"
+          - "collect seed"
+      january:
+        type: "boolean"
+      february:
+        type: "boolean"
+      march:
+        type: "boolean"
+      april:
+        type: "boolean"
+      may:
+        type: "boolean"
+      june:
+        type: "boolean"
+      july:
+        type: "boolean"
+      august:
+        type: "boolean"
+      september:
+        type: "boolean"
+      october:
+        type: "boolean"
+      november:
+        type: "boolean"
+      december:
+        type: "boolean"
+    xml:
+      name: "Calendar"
+
+  Variety:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      image:
+        type: "string"
+      latin_name:
+        type: "string"
+      description:
+        type: "string"
+      vendor:
+        type: "string"
+      price:
+        type: "string"
+      link:
+        type: "string"
+    xml:
+      name: "variety"
+  Tag:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      name:
+        type: "string"
+    xml:
+      name: "Tag"
+  produce:
+    type: "object"
+    required:
+    - "name"
+    - "description"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      Category:
+          type: "string"
+          enum:
+            - "root"
+            - "fruit"
+            - "leafy"
+            - "flower"
+      image:
+        type: "string"
+        example: "https://unsplash.com/photos/sf_1ZDA1YFw"
+      name:
+        type: "string"
+        example: "banana"
+      latin_name:
+        type: "string"
+        example: "musa"
+      taxonomy:
+        type: "string"
+
+      Variety:
+        type: "array"
+        items:
+            $ref: "#/definitions/Variety"
+
+      description:
+        type: "string"
+      origin:
+        type: "string"
+      culture:
+        type: "string"
+      height:
+        type: "string"
+      spread:
+        type: "string"
+      sowing:
+        type: "string"
+      pruning&thining:
+        type: "string"
+      watering:
+        type: "string"
+      pets&diseases:
+        type: "string"
+      harvesting:
+        type: "string"
+      collecting_seed:
+        type: "string"
+      storing_seed:
+        type: "string"
+      Soil_type:
+          type: "string"
+          enum:
+            - "any type of soil"
+            - "sand"
+            - "loam"
+      Aspect:
+          type: "string"
+          enum:
+            - "any aspect"
+            - "south facing"
+      Light:
+          type: "string"
+          enum:
+            - "any light"
+            - "full sun"
+      Hardiness:
+          type: "string"
+          enum:
+            - "any hardiness"
+            - "hardy"
+            - "not hardy"
+            - "unheated greenhouse"
+            - "winter protection"
+      Moisture:
+          type: "string"
+          enum:
+            - "any moisture"
+            - "well drained"
+      pH:
+          type: "string"
+          enum:
+            - "any pH"
+            - "neutral"
+            - "acidic"
+            - "alkaline"
+      Harvest_frequency:
+          type: "string"
+          enum:
+            - "annual"
+            - "perennial"
+      Calendar:
+        type: "array"
+        items:
+            $ref: "#/definitions/Calendar"
+      historical_cultivation:
+        type: "string"
+      modern_cultivation:
+        type: "string"
+      tags:
+        type: "array"
+        xml:
+          name: "tag"
+          wrapped: true
+        items:
+          $ref: "#/definitions/Tag"
+    xml:
+      name: "produce"
+  ApiResponse:
+    type: "object"
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+      type:
+        type: "string"
+      message:
+        type: "string"
+externalDocs:
+  description: "Find out more about Swagger"
+  url: "http://swagger.io"
